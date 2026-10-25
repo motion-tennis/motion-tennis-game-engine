@@ -1,0 +1,11 @@
+# Game engine contributor instructions
+
+These instructions apply to this repository. Read [orientation](docs/orientation.md), [workflow](docs/workflow.md) and the canonical [project status](https://github.com/motion-tennis/documentation/blob/main/docs/project-status.md) before work. The central status is the authority for the active stage; this repository does not maintain an independent stage schedule.
+
+- Inspect Git status and current source before claiming implementation or editing. Preserve other contributors' work. All project documentation, code, comments and identifiers must be English; use `//` for new C/C++ comments and preserve license attribution.
+- Name the task's stage, bounded scope, acceptance evidence and deferred work using the [shared contribution workflow](https://github.com/motion-tennis/documentation/blob/main/docs/contribution-workflow.md). Complete the authorized task without repeatedly requesting approval for routine choices inside it.
+- Do not advance to another stage because one task passed. An explicit human request can authorize a bounded future-stage slice; record that scope, dependency gaps and handoff without advancing the global stage. If central status is unavailable, runtime work requires verified pinned status/task evidence; do not guess that a stage is open.
+- Preserve the required Pi `ball_state_request`/`ball_state_response`, session/epoch fencing and atomic versioned commits. Pi calculates authoritative ball, avatars, serve/rules and score; this service stores committed state, and the renderer only presents it.
+- The existing proposed schema is ball-only. Do not treat it as the full doubles contract or implement a private incompatible extension. Follow the central versioned contract and size/fixture gates before the corresponding runtime work.
+- Keep native timestamps, trace identities and Pi-issued mapping versions/uncertainty. Rendering and debug export must not become synchronous gameplay dependencies. A marker is diagnostic, never a new gameplay trigger.
+- Run the real checks appropriate to the scoped change, document what they establish, and leave a handoff with remaining limits. No runtime build/test command exists until actual build files and tests are added. Stage acceptance follows the central process, not a local success claim.

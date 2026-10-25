@@ -2,6 +2,8 @@
 
 The state-storage and visualization component of **Motion Tennis**, a doubles 2v2 tennis demonstrator inspired by Wii Tennis. It runs on the user's **Windows laptop with an RTX 5080**, stores the committed match state under a planned extended contract, answers Pi queries and displays two team-relative views, automatic avatar movement, body-local racket gestures, scoring and timing diagnostics. Human participants remain at their calibrated physical play stations.
 
+Start with [repository orientation](docs/orientation.md), [staged workflow](docs/workflow.md) and the canonical [current project status](https://github.com/motion-tennis/documentation/blob/main/docs/project-status.md). This README describes the intended component; it does not authorize implementing every planned feature at once. [AGENTS.md](AGENTS.md) defines local contributor boundaries.
+
 ## Status and reference implementation
 
 | Status | Meaning |
@@ -85,6 +87,8 @@ The [integrated startup plan](https://github.com/motion-tennis/documentation/blo
 
 ## Planned smoke test and current checks
 
+These planned checks span future stages. Select one authorized slice through the [workflow](docs/workflow.md); they are not a single current implementation task.
+
 First specify the extended match contract and prove its maximum encoded size. Answer a batch query with an atomic snapshot; accept one matching ordered match update; publish the committed result; then replay the update and submit a stale base version. Verify no duplicate commit/effect, partial batch acceptance or score/serve/avatar inconsistency. Test ambiguous replies, restarted writers, periodic movement without controller input and response latency under two-view rendering/GPU load.
 
 Verify four-player lobby readiness, fixed team/avatar identity through role and court-end changes, lift/toss/overhead serve transitions, scoreboard cases from canonical rule fixtures, and agreement of both cameras on world state and collision events. Preserve the continuous 200 Hz stream, marker tracing and existing timing populations. Diagnostic tests with one through four controllers follow the [test matrix](https://github.com/motion-tennis/documentation/blob/main/docs/testing.md); a full match requires all four ready players.
@@ -100,8 +104,11 @@ Use the central [development checker](https://github.com/motion-tennis/documenta
 ## Layout, limitations, and contribution
 
 ```text
-README.md  Component reference profile and implementation status
-LICENSE    Existing MIT license
+README.md            Component reference profile and implementation status
+AGENTS.md            Contributor scope and contract rules
+docs/orientation.md  Role, reading order and bounded entry tasks
+docs/workflow.md     Local contribution to shared stages and handoffs
+LICENSE              Existing MIT license
 ```
 
 State-service capacity, renderer behavior, process interference, calibration, restart recovery and display timing are unverified. See [open decisions](https://github.com/motion-tennis/documentation/blob/main/docs/roadmap.md).
