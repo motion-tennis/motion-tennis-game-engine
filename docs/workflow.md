@@ -15,7 +15,7 @@ The central project status determines what is active. This table translates the 
 | S6 — Reproducible demonstrator | Package verified setup/startup/recovery, dependency versions and operator-facing evidence | A fresh-setup reproduction, recorded commands/configuration and run bundle satisfying central gates | Unrequested features or unsupported performance guarantees |
 | S7 — Deferred true 3D/alternatives | Only a separately authorized research or migration slice | Explicit new scope, compatibility impact and evidence plan | Automatic progression from S6; unapproved 3D engine, sensor or transport replacement |
 
-The S0 contract currently needs full-match fields beyond the ball-only proposal. An isolated S1 store validates/stores the agreed data while its mock writer supplies candidates. Tennis rule calculation remains exclusively a Pi responsibility at every stage; it is never deferred PC work. Future work keeps service storage and renderer presentation separate from Pi authority.
+The S0 v0.3 candidate supplies full-match fields and bounded state-stream framing; its shared evidence and acceptance are recorded centrally. An isolated S1 store validates/stores the agreed data while its mock writer supplies candidates. Tennis rule calculation remains exclusively a Pi responsibility at every stage; it is never deferred PC work. Future work keeps service storage and renderer presentation separate from Pi authority.
 
 ## One task at a time
 

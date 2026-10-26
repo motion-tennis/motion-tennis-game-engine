@@ -1,8 +1,10 @@
 # Motion Tennis Game Engine
 
-The state-storage and visualization component of **Motion Tennis**, a doubles 2v2 tennis demonstrator inspired by Wii Tennis. It runs on the user's **Windows laptop with an RTX 5080**, stores the committed match state under a planned extended contract, answers Pi queries and displays two team-relative views, automatic avatar movement, body-local racket gestures, scoring and timing diagnostics. Human participants remain at their calibrated physical play stations.
+The state-storage and visualization component of **Motion Tennis**, a doubles 2v2 tennis demonstrator inspired by Wii Tennis. It runs on the user's **Windows laptop with an RTX 5080**, stores the committed match state under the proposed v0.3 contract, answers Pi queries and displays two team-relative views, automatic avatar movement, body-local racket gestures, scoring and timing diagnostics. Human participants remain at their calibrated physical play stations.
 
 Start with [repository orientation](docs/orientation.md), [staged workflow](docs/workflow.md) and the canonical [current project status](https://github.com/motion-tennis/documentation/blob/main/docs/project-status.md). This README describes the intended component; it does not authorize implementing every planned feature at once. [AGENTS.md](AGENTS.md) defines local contributor boundaries.
+
+The [S0 contract review and first S1 handoff](docs/s0-contract-review.md) record this component's producer/consumer expectations, required fixtures and remaining evidence.
 
 ## Status and reference implementation
 
@@ -11,7 +13,7 @@ Start with [repository orientation](docs/orientation.md), [staged workflow](docs
 | **Implemented** | Documentation and an MIT license only; no state service, renderer, dependency lock, build files, assets or tests exist |
 | **Agreed design** | Windows host; doubles 2v2 with automatic avatar movement and stationary participants; controller-lift toss followed by overhead serve; normal tennis scoring; two elevated behind-team views of one shared world; active camera/IMU input and required Pi state query/response |
 | **Proposed reference** | Native C++20 state service plus a separate C++/SDL3 simple renderer process; version-checked atomic batches and bounded state publication |
-| **Open** | Versioned full-match schema/size proof, verified Windows/compiler/SDL3 versions, calibrated body-local gesture mapping, camera/split-layout tuning, measured load isolation, display latency and packaging |
+| **Open** | Runtime integration of the reviewed full-match contract, verified Windows/compiler/SDL3 versions, calibrated body-local gesture mapping, camera/split-layout tuning, measured load isolation, display latency and packaging |
 
 The Windows reference supersedes the earlier Linux-first PC assumption. C++20/SDL3 remains a proposed stack; a stylized perspective/2.5D projection is possible, and no full 3D engine, Unity, Godot or Unreal implementation is implied. The GPU camera worker is a separate service/repository on the same laptop; shared CPU/GPU resources can still affect timing. See the [gameplay rules](https://github.com/motion-tennis/documentation/blob/main/docs/gameplay.md), [player assignment](https://github.com/motion-tennis/documentation/blob/main/docs/player-assignment.md), [ADR 0010](https://github.com/motion-tennis/documentation/blob/main/docs/adr/0010-doubles-auto-movement-gameplay.md) and [game integration design](https://github.com/motion-tennis/documentation/blob/main/docs/game-engine.md).
 
@@ -19,30 +21,30 @@ The Windows reference supersedes the earlier Linux-first PC assumption. C++20/SD
 
 The planned state service owns the sole committed match snapshot and ordered committed-event history. Physics on the Pi calculates every authoritative advance: ball movement/collisions, automatic avatar movement, serve phases and scoring. The game service validates and commits the entire candidate atomically; the renderer reads. There is no second PC scorer or independent avatar AI. Interpolation for display never becomes competing game authority.
 
-**Contract gap:** the current proposed `motion.proto` snapshot contains ball state and transaction/event metadata, but no complete match roster, avatar state, serve state or score fields. A reviewed versioned extension must define those bounded fields and their invariants, including current court ends and server/receiver. This documentation does not modify the schema or implement those features. All participants must adopt the extended contract before full-match integration; the mandatory ball query/response remains part of that design.
+**Contract candidate:** `motion.v03` defines typed setup and complete ball/avatar/serve/rally/score state, including roster/configuration references, court ends and server/receiver. The [S0 baseline](https://github.com/motion-tennis/documentation/blob/main/docs/s0-baseline.md) records the shared invariants, codec/resource proof and remaining acceptance. These artifacts do not implement this service. All participants must negotiate the exact shared version and hashes; the mandatory ball query/response remains part of the design.
 
 The planned [IMU threshold-marker overlay](https://github.com/motion-tennis/documentation/blob/main/docs/imu-trigger-markers.md) uses existing transaction/query/batch/commit/event identities to show state-service and rendering stages. Keep their trace provenance without adding marker fields or dependencies to gameplay messages. The 200 Hz controller stream and ordinary query/commit handling remain unchanged; display timing is a separate branch from controller feedback.
 
 For each valid `ball_state_request`, return `ball_state_response` echoing every logical query entry and one atomic snapshot with game session, version, simulation tick and tick duration. A repeated query ID returns its retained response within the protocol lifetime; a previous push does not replace the required query/response.
 
-Accept a `state_update` only for the current game session and fenced physics writer epoch with an exact matching base version. Under the planned extended contract, validate the bounded ordered batch, final ball/avatar/serve/score state, roster associations and input/calibration metadata, then commit the whole match state and event list atomically. Return `state_commit_result`; reject the entire conflicting/invalid batch without partial effects. Duplicate update keys return the original outcome instead of committing twice. A current snapshot alone cannot resolve whether a particular uncertain batch committed.
+Accept a `state_update` only for the current game session and fenced physics writer epoch with an exact matching base version. Under the proposed v0.3 contract, validate the bounded ordered batch, final ball/avatar/serve/score state, roster associations and input/calibration metadata, then commit the whole match state and event list atomically. Return `state_commit_result`; reject the entire conflicting/invalid batch without partial effects. Duplicate update keys return the original outcome instead of committing twice. A current snapshot alone cannot resolve whether a particular uncertain batch committed.
 
 Four controllers at 200 Hz are grouped by the Pi into 5 ms batches, normally four decisions, at most eight and at most two/controller. Every measurement keeps its own logical ball query and result. One batch shares a committed version; `event_index` preserves intra-batch order. Only one physics state batch is in flight. Hit/miss controller feedback follows accepted commit confirmation. See [physics consistency](https://github.com/motion-tennis/documentation/blob/main/docs/physics.md).
 
 ## Connections and process separation
 
-These are the current proposed [`0.2-proposed` transport contracts](https://github.com/motion-tennis/documentation/blob/main/docs/protocol.md), with the shared [schema](https://github.com/motion-tennis/documentation/blob/main/spec/motion.proto) and [reference profile](https://github.com/motion-tennis/documentation/blob/main/spec/reference-profile.json). Message names below do not imply that the missing full-match fields already exist; that contract extension remains required.
+These are the proposed [`0.3-proposed` transport contracts](https://github.com/motion-tennis/documentation/blob/main/docs/protocol.md), with the shared [schema](https://github.com/motion-tennis/documentation/blob/main/spec/motion.proto) and [reference profile](https://github.com/motion-tennis/documentation/blob/main/spec/reference-profile.json). [ADR 0011](https://github.com/motion-tennis/documentation/blob/main/docs/adr/0011-full-match-contract-and-state-stream.md) records the dedicated state stream and its bounds; runtime interoperability is not yet implemented.
 
 | Direction | Interface | Component |
 | --- | --- | --- |
-| Input / output | `ball_state_request` / `ball_state_response`, UDP 41010 | Pi physics |
-| Input / output | `state_update` / `state_commit_result`, same UDP endpoint | Pi physics |
+| Input / output | `ball_state_request` / `ball_state_response`, dedicated TCP 41010 | Pi physics |
+| Input / output | `state_update` / `state_commit_result`, same state stream | Pi physics |
 | Control | Writer setup, profile/hash agreement, clock mapping, commit lookup and state subscription, TCP 41041 | Physics, local renderer and debug clients |
 | Local publication | `state_publication` with committed snapshot and ordered events over a bounded subscription | Separate renderer/debug consumers |
 | Optional input | Independent pose/frame-status display subscription | Webcam tracking service |
 | Diagnostics | Buffered state, query, commit and render records | `debug-units` |
 
-Live UDP/Protobuf messages are limited to 1,200 bytes including the envelope. An atomic update must fit; it is never split into separately applied fragments. Network ports are reference reservations, not currently listening services. Wire the Windows host to the dedicated LAN and keep camera video local. See [networking](https://github.com/motion-tennis/documentation/blob/main/docs/networking.md).
+The dedicated TCP state channel uses a four-byte big-endian length prefix and an 8,192-byte envelope limit. Decode and validate one complete frame before atomically applying its candidate; partial reads or multiple frames in one read are transport details, never partial commits. Controller/pose UDP datagrams retain the 1,200-byte limit. State and control streams have separate bounded buffers so a stalled subscription cannot block the writer. Network ports are reference reservations, not currently listening services. Wire the Windows host to the dedicated LAN and keep camera video local. See [networking](https://github.com/motion-tennis/documentation/blob/main/docs/networking.md).
 
 The state service must respond independently of rendering and GPU inference. The renderer targets 60 Hz and may skip obsolete visual snapshots while retaining event identity/accounting. This process separation does not prove a latency bound; test CPU/GPU saturation and Windows scheduling effects. Native state-service handling, IPC/subscription buffering and diagnostics must remain bounded.
 
@@ -60,7 +62,7 @@ Display two simultaneous views of the same committed world/version. Each camera 
 
 Avatar running comes from Pi-calculated match state. Stationary participants still supply active camera/IMU arm and racket gestures, orientation and timing; a pose subscription may animate body-local motion but cannot replace the committed avatar root position or compute another hit. Mark constrained webcam geometry as 2.5D and stale/ambiguous observations as faults; do not invent measured depth or let displayed animation restore invalid hit eligibility.
 
-Bound interpolation to event-consistent segments and split it at racket contacts, bounces, net contacts, point/serve transitions and resets. Both views must show the same contact result; smoothing must not carry the ball through a court/net surface or feed a visual collision into physics. Deduplicate effects by `(game_session_id, writer_epoch, batch_id, event_index)`.
+Bound interpolation to event-consistent segments and split it at racket contacts, bounces, net contacts, point/serve transitions and resets. Both views must show the same contact result; smoothing must not carry the ball through a court/net surface or feed a visual collision into physics. Deduplicate rule effects by the stable rule-event identity from the accepted commit; retain `(game_session_id, writer_epoch, batch_id)` and keep per-sample `event_index` distinct.
 
 ## Scoreboard, serve cues and timing
 
@@ -89,7 +91,7 @@ The [integrated startup plan](https://github.com/motion-tennis/documentation/blo
 
 These planned checks span future stages. Select one authorized slice through the [workflow](docs/workflow.md); they are not a single current implementation task.
 
-First specify the extended match contract and prove its maximum encoded size. Answer a batch query with an atomic snapshot; accept one matching ordered match update; publish the committed result; then replay the update and submit a stale base version. Verify no duplicate commit/effect, partial batch acceptance or score/serve/avatar inconsistency. Test ambiguous replies, restarted writers, periodic movement without controller input and response latency under two-view rendering/GPU load.
+Using the pinned v0.3 full-match contract and maximum-size fixtures, answer a batch query with an atomic snapshot; accept one matching ordered match update; publish the committed result; then replay the update and submit a stale base version. Verify no duplicate commit/effect, partial batch acceptance or score/serve/avatar inconsistency. Test ambiguous replies, restarted writers, periodic movement without controller input and response latency under two-view rendering/GPU load.
 
 Verify four-player lobby readiness, fixed team/avatar identity through role and court-end changes, lift/toss/overhead serve transitions, scoreboard cases from canonical rule fixtures, and agreement of both cameras on world state and collision events. Preserve the continuous 200 Hz stream, marker tracing and existing timing populations. Diagnostic tests with one through four controllers follow the [test matrix](https://github.com/motion-tennis/documentation/blob/main/docs/testing.md); a full match requires all four ready players.
 

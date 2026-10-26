@@ -20,7 +20,7 @@ Pi owns ball motion, avatar roots/headings, contact/rule decisions, serving and 
 
 Repository inspection on 2026-10-25 found documentation and the MIT license only. No state service, renderer, build configuration, dependency lock, codec, runtime tests or measured performance exists. C++20 and a separate SDL3 renderer remain proposed. Reinspect files before using this statement in a later task; the [central status](https://github.com/motion-tennis/documentation/blob/main/docs/project-status.md) records project progress.
 
-The current proposed `motion.proto` snapshot/update contains ball state and input decisions, not the complete roster, avatar, serve/rally and score state. The reviewed versioned doubles extension and its bounded-size/atomicity fixtures must precede implementation that depends on them. See the [contract gap](https://github.com/motion-tennis/documentation/blob/main/docs/protocol.md#doubles-match-contract-extension).
+The proposed v0.3 `motion.proto` defines complete match setup/state and atomic update/publication over the bounded state stream. The [S0 baseline](https://github.com/motion-tennis/documentation/blob/main/docs/s0-baseline.md) records compatible hashes and codec/resource evidence; the [component review](s0-contract-review.md) defines local invariants and the first S1 handoff. Runtime integration still needs the released stage and a bounded task.
 
 ## Reading order
 
