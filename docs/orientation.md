@@ -4,7 +4,7 @@
 
 ## Purpose and boundary
 
-This repository is the Windows committed-state service and separate renderer for Motion Tennis. The intended game is four-human doubles with Pi-controlled automatic movement, human pose/IMU racket gestures and two elevated team views. The state service stores one versioned match; it does not calculate a competing result on the PC.
+This repository is the Windows committed-state service and separate Unity game client with C# for Motion Tennis. The intended game is four-human doubles with Pi-controlled automatic movement, human pose/IMU racket gestures and two elevated team views. The state service stores one versioned match; it does not calculate a competing result on the PC.
 
 | Interface | Responsibility |
 | --- | --- |
@@ -14,11 +14,11 @@ This repository is the Windows committed-state service and separate renderer for
 | Renderer/subscribers | Publish committed state and ordered event identities through bounded subscriptions; both cameras show the same world |
 | Control/diagnostics | Participate in setup and Pi-coordinated clock exchange; preserve native times and export bounded asynchronous trace evidence |
 
-Pi owns ball motion, avatar roots/headings, contact/rule decisions, serving and score changes. This service owns storage/versioning of accepted state. Rendering owns presentation, including camera transforms and nonauthoritative interpolation. GPU tracking is a separate repository/process on the same laptop.
+Pi owns ball motion, avatar roots/headings, contact/rule decisions, serving and score changes. This service owns storage/versioning of accepted state. Unity owns presentation, including camera transforms and nonauthoritative interpolation; its physics must not advance authoritative state. GPU tracking is a separate repository/process on the same laptop.
 
 ## What exists
 
-Repository inspection on 2026-10-25 found documentation and the MIT license only. No state service, renderer, build configuration, dependency lock, codec, runtime tests or measured performance exists. C++20 and a separate SDL3 renderer remain proposed. Reinspect files before using this statement in a later task; the [central status](https://github.com/motion-tennis/documentation/blob/main/docs/project-status.md) records project progress.
+Repository inspection on 2026-10-29 found documentation and the MIT license only. No state service, Unity project, renderer, build configuration, dependency lock, codec, runtime tests or measured performance exists. Unity with C# is selected for the game client under [ADR 0012](https://github.com/motion-tennis/documentation/blob/main/docs/adr/0012-unity-game-engine.md); native C++20 remains proposed for the separate headless state service. The exact Unity Editor/LTS release and packages remain open until verified. Reinspect files before using this statement in a later task; the [central status](https://github.com/motion-tennis/documentation/blob/main/docs/project-status.md) records project progress.
 
 The proposed v0.3 `motion.proto` defines complete match setup/state and atomic update/publication over the bounded state stream. The [S0 baseline](https://github.com/motion-tennis/documentation/blob/main/docs/s0-baseline.md) records compatible hashes and codec/resource evidence; the [component review](s0-contract-review.md) defines local invariants and the first S1 handoff. Runtime integration still needs the released stage and a bounded task.
 

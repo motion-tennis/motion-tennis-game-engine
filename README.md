@@ -1,6 +1,6 @@
 # Motion Tennis Game Engine
 
-The state-storage and visualization component of **Motion Tennis**, a doubles 2v2 tennis demonstrator inspired by Wii Tennis. It runs on the user's **Windows laptop with an RTX 5080**, stores the committed match state under the proposed v0.3 contract, answers Pi queries and displays two team-relative views, automatic avatar movement, body-local racket gestures, scoring and timing diagnostics. Human participants remain at their calibrated physical play stations.
+The state-storage and visualization component of **Motion Tennis**, a doubles 2v2 tennis demonstrator inspired by Wii Tennis. It runs on the user's **Windows laptop with an RTX 5080**, with a separate committed-state service and a **Unity game client using C#**. The service stores the committed match state under the proposed v0.3 contract and answers Pi queries; Unity displays two team-relative views, automatic avatar movement, body-local racket gestures, scoring and timing diagnostics. Human participants remain at their calibrated physical play stations.
 
 Start with [repository orientation](docs/orientation.md), [staged workflow](docs/workflow.md) and the canonical [current project status](https://github.com/motion-tennis/documentation/blob/main/docs/project-status.md). This README describes the intended component; it does not authorize implementing every planned feature at once. [AGENTS.md](AGENTS.md) defines local contributor boundaries.
 
@@ -11,11 +11,11 @@ The [S0 contract review and first S1 handoff](docs/s0-contract-review.md) record
 | Status | Meaning |
 | --- | --- |
 | **Implemented** | Documentation and an MIT license only; no state service, renderer, dependency lock, build files, assets or tests exist |
-| **Agreed design** | Windows host; doubles 2v2 with automatic avatar movement and stationary participants; controller-lift toss followed by overhead serve; normal tennis scoring; two elevated behind-team views of one shared world; active camera/IMU input and required Pi state query/response |
-| **Proposed reference** | Native C++20 state service plus a separate C++/SDL3 simple renderer process; version-checked atomic batches and bounded state publication |
-| **Open** | Runtime integration of the reviewed full-match contract, verified Windows/compiler/SDL3 versions, calibrated body-local gesture mapping, camera/split-layout tuning, measured load isolation, display latency and packaging |
+| **Agreed design** | Windows host; Unity with C# for the separate game client, renderer and UI; doubles 2v2 with automatic avatar movement and stationary participants; controller-lift toss followed by overhead serve; normal tennis scoring; two elevated behind-team views of one shared world; active camera/IMU input and required Pi state query/response |
+| **Proposed reference** | Native C++20 headless state service; version-checked atomic batches and bounded state publication to the Unity process |
+| **Open** | Runtime integration of the reviewed full-match contract, verified Unity Editor/LTS release and packages, Windows/compiler versions, calibrated body-local gesture mapping, camera/split-layout tuning, measured load isolation, display latency and packaging |
 
-The Windows reference supersedes the earlier Linux-first PC assumption. C++20/SDL3 remains a proposed stack; a stylized perspective/2.5D projection is possible, and no full 3D engine, Unity, Godot or Unreal implementation is implied. The GPU camera worker is a separate service/repository on the same laptop; shared CPU/GPU resources can still affect timing. See the [gameplay rules](https://github.com/motion-tennis/documentation/blob/main/docs/gameplay.md), [player assignment](https://github.com/motion-tennis/documentation/blob/main/docs/player-assignment.md), [ADR 0010](https://github.com/motion-tennis/documentation/blob/main/docs/adr/0010-doubles-auto-movement-gameplay.md) and [game integration design](https://github.com/motion-tennis/documentation/blob/main/docs/game-engine.md).
+The Windows reference supersedes the earlier Linux-first PC assumption. The user selected Unity with C# on 2026-10-29, replacing the proposed SDL3 renderer; [ADR 0012](https://github.com/motion-tennis/documentation/blob/main/docs/adr/0012-unity-game-engine.md) records this decision. No Unity project or runtime exists yet. Unity presentation does not change the webcam-first 2.5D input constraint or release the deferred true-3D tracking work. The GPU camera worker is a separate service/repository on the same laptop; shared CPU/GPU resources can still affect timing. See the [gameplay rules](https://github.com/motion-tennis/documentation/blob/main/docs/gameplay.md), [player assignment](https://github.com/motion-tennis/documentation/blob/main/docs/player-assignment.md), [ADR 0010](https://github.com/motion-tennis/documentation/blob/main/docs/adr/0010-doubles-auto-movement-gameplay.md) and [game integration design](https://github.com/motion-tennis/documentation/blob/main/docs/game-engine.md).
 
 ## Responsibilities and state ownership
 
@@ -46,7 +46,7 @@ These are the proposed [`0.3-proposed` transport contracts](https://github.com/m
 
 The dedicated TCP state channel uses a four-byte big-endian length prefix and an 8,192-byte envelope limit. Decode and validate one complete frame before atomically applying its candidate; partial reads or multiple frames in one read are transport details, never partial commits. Controller/pose UDP datagrams retain the 1,200-byte limit. State and control streams have separate bounded buffers so a stalled subscription cannot block the writer. Network ports are reference reservations, not currently listening services. Wire the Windows host to the dedicated LAN and keep camera video local. See [networking](https://github.com/motion-tennis/documentation/blob/main/docs/networking.md).
 
-The state service must respond independently of rendering and GPU inference. The renderer targets 60 Hz and may skip obsolete visual snapshots while retaining event identity/accounting. This process separation does not prove a latency bound; test CPU/GPU saturation and Windows scheduling effects. Native state-service handling, IPC/subscription buffering and diagnostics must remain bounded.
+The state service must respond independently of Unity rendering and GPU inference. The separate Unity process targets 60 Hz and may skip obsolete visual snapshots while retaining event identity/accounting. Unity frame updates, garbage collection and rendering stalls must not gate state replies or commits. This process separation does not prove a latency bound; test CPU/GPU saturation and Windows scheduling effects. Native state-service handling, IPC/subscription buffering and diagnostics must remain bounded.
 
 ## Pi reference clock mapping
 
@@ -60,7 +60,7 @@ The startup lobby supports explicit team selection and physical person/controlle
 
 Display two simultaneous views of the same committed world/version. Each camera is elevated and angled from behind its own team's baseline: own team near, opponents far. A horizontal split with team A above and team B below is proposed; split orientation is not an agreed requirement. On normal court-end changes, cameras move to their teams' new sides while slot/team/controller/person/avatar identity and viewport ownership remain fixed. Camera transforms affect presentation only, not input meaning, collision geometry or world state.
 
-Avatar running comes from Pi-calculated match state. Stationary participants still supply active camera/IMU arm and racket gestures, orientation and timing; a pose subscription may animate body-local motion but cannot replace the committed avatar root position or compute another hit. Mark constrained webcam geometry as 2.5D and stale/ambiguous observations as faults; do not invent measured depth or let displayed animation restore invalid hit eligibility.
+Avatar running comes from Pi-calculated match state. Unity physics, collision callbacks and animation must not calculate authoritative ball motion, hits, avatar movement or scoring. Stationary participants still supply active camera/IMU arm and racket gestures, orientation and timing; a pose subscription may animate body-local motion but cannot replace the committed avatar root position or compute another hit. Mark constrained webcam geometry as 2.5D and stale/ambiguous observations as faults; do not invent measured depth or let displayed animation restore invalid hit eligibility.
 
 Bound interpolation to event-consistent segments and split it at racket contacts, bounces, net contacts, point/serve transitions and resets. Both views must show the same contact result; smoothing must not carry the ball through a court/net surface or feed a visual collision into physics. Deduplicate rule effects by the stable rule-event identity from the accepted commit; retain `(game_session_id, writer_epoch, batch_id)` and keep per-sample `event_index` distinct.
 
@@ -74,7 +74,7 @@ Show controller-reported `tr - t0`; do not calculate it by subtracting a PC cloc
 
 ## Prerequisites and setup
 
-Git and a Markdown viewer are enough for current documentation. C++20, SDL3 and generated codecs are proposed implementation dependencies whose exact verified versions must be added with real build files. No executable or launch command exists yet.
+Git and a Markdown viewer are enough for current documentation. Unity with C# is the selected game-client stack; the exact verified Unity Editor/LTS release, Windows build support and package versions must be pinned with its first implementation. C++20 and generated codecs remain proposed state-service dependencies whose verified versions must accompany real build files. No executable or launch command exists yet.
 
 Clone using the verified remote:
 
@@ -83,7 +83,7 @@ git clone git@github.com:motion-tennis/motion-tennis-game-engine.git
 cd motion-tennis-game-engine
 ```
 
-Configured GitHub access is required. Planned modules are versioned full-match codecs, session/writer and roster management, atomic snapshot/query handling, match-batch validation/deduplication, bounded state publication, a separate two-view renderer, team/pairing lobby, scoreboard/serve UI and trace adapters. Keep dependency locks, configuration and build/run commands beside their first implementations.
+Configured GitHub access is required. Planned modules are versioned full-match codecs, session/writer and roster management, atomic snapshot/query handling, match-batch validation/deduplication, bounded state publication, a separate Unity client with two team views, team/pairing lobby, scoreboard/serve UI and trace adapters. Keep dependency locks, configuration and build/run commands beside their first implementations.
 
 The [integrated startup plan](https://github.com/motion-tennis/documentation/blob/main/docs/development.md) initializes the game session before enabling physics writes, team/person assignment and gameplay. A game restart creates a new session; a replacement physics process receives a new writer epoch. Team selection, pairing, pause/resume and reset use versioned control handling. Normal serves come from controller gestures; explicit diagnostic serve/reset commands go through physics or a deliberately fenced new session rather than directly moving committed state.
 
