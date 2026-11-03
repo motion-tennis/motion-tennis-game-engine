@@ -4,7 +4,7 @@
 
 The central project status determines what is active. This table translates the shared stages into local work; it is not a separate schedule, acceptance record or instruction to implement every row. A completed task does not open the next stage.
 
-Unity with C# is the selected Windows game-client, renderer and UI stack under [ADR 0012](https://github.com/motion-tennis/documentation/blob/main/docs/adr/0012-unity-game-engine.md). The headless committed-state service remains a separate process with native C++20 proposed. This stack decision does not implement a runtime or change the central stage; pin the verified Unity Editor/LTS release and packages when its implementation is in scope.
+Unity with C# is selected for the Windows game client, renderer and UI, and C# is selected for the separate headless committed-state service under [ADR 0012](https://github.com/motion-tennis/documentation/blob/main/docs/adr/0012-unity-game-engine.md). The initial in-memory S1 state-store slice is implemented; its handoff records limits and remaining integration. This work does not change the central stage; pin the verified Unity Editor/LTS release, .NET/runtime target and packages when implementation is in scope.
 
 | Stage | Bounded local contribution | Evidence to hand off | Deferred scope |
 | --- | --- | --- | --- |

@@ -1,0 +1,34 @@
+# Unity generated files
+RTTMessung/[Ll]ibrary/
+RTTMessung/[Tt]emp/
+RTTMessung/[Oo]bj/
+RTTMessung/[Bb]uild/
+RTTMessung/[Bb]uilds/
+RTTMessung/[Ll]ogs/
+RTTMessung/[Uu]ser[Ss]ettings/
+RTTMessung/MemoryCaptures/
+RTTMessung/Recordings/
+
+# IDE-generated files
+RTTMessung/.vs/
+RTTMessung/.idea/
+RTTMessung/*.csproj
+RTTMessung/*.sln
+RTTMessung/*.slnx
+RTTMessung/*.user
+RTTMessung/*.suo
+RTTMessung/*.tmp
+RTTMessung/*.pidb
+RTTMessung/*.booproj
+RTTMessung/*.svd
+RTTMessung/*.pdb
+RTTMessung/*.mdb
+
+# Local measurement output
+RTTMessung/MeasurementResults/
+
+# .NET build output
+src/**/bin/
+src/**/obj/
+tests/**/bin/
+tests/**/obj/
