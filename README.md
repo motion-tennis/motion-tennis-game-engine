@@ -2,7 +2,7 @@
 
 The state-storage and visualization component of **Motion Tennis**, a doubles 2v2 tennis demonstrator inspired by Wii Tennis. It runs on the user's **Windows laptop with an RTX 5080**, with a separate committed-state service and a **Unity game client using C#**. The service stores the committed match state under the proposed v0.3 contract and answers Pi queries; Unity displays two team-relative views, automatic avatar movement, body-local racket gestures, scoring and timing diagnostics. Human participants remain at their calibrated physical play stations.
 
-Start with [repository orientation](docs/orientation.md), [staged workflow](docs/workflow.md) and the canonical [current project status](https://github.com/motion-tennis/documentation/blob/main/docs/project-status.md). This README describes the intended component; it does not authorize implementing every planned feature at once. [AGENTS.md](AGENTS.md) defines local contributor boundaries.
+Start with [repository orientation](docs/orientation.md), [staged workflow](docs/workflow.md) and the canonical [current project status](https://github.com/motion-tennis/documentation/blob/main/docs/project-status.md). The first C# state-store slice and its limits are recorded in [S1 state store](docs/s1-state-store.md). This README describes the intended component; it does not authorize implementing every planned feature at once. [AGENTS.md](AGENTS.md) defines local contributor boundaries.
 
 The [S0 contract review and first S1 handoff](docs/s0-contract-review.md) record this component's producer/consumer expectations, required fixtures and remaining evidence.
 
@@ -10,12 +10,12 @@ The [S0 contract review and first S1 handoff](docs/s0-contract-review.md) record
 
 | Status | Meaning |
 | --- | --- |
-| **Implemented** | Documentation and an MIT license only; no state service, renderer, dependency lock, build files, assets or tests exist |
-| **Agreed design** | Windows host; Unity with C# for the separate game client, renderer and UI; doubles 2v2 with automatic avatar movement and stationary participants; controller-lift toss followed by overhead serve; normal tennis scoring; two elevated behind-team views of one shared world; active camera/IMU input and required Pi state query/response |
-| **Proposed reference** | Native C++20 headless state service; version-checked atomic batches and bounded state publication to the Unity process |
-| **Open** | Runtime integration of the reviewed full-match contract, verified Unity Editor/LTS release and packages, Windows/compiler versions, calibrated body-local gesture mapping, camera/split-layout tuning, measured load isolation, display latency and packaging |
+| **Implemented** | Documentation, a local Unity RTT diagnostic project, and the S1 headless C# state-store library with deterministic host checks; no network service, generated full-match codec or game renderer exists |
+| **Agreed design** | Windows host; C# headless state service in a separate process and Unity with C# for the game client, renderer and UI; doubles 2v2 with automatic avatar movement and stationary participants; controller-lift toss followed by overhead serve; normal tennis scoring; two elevated behind-team views of one shared world; active camera/IMU input and required Pi state query/response |
+| **Selected stack** | C# headless state service in a separate process; version-checked atomic batches and bounded state publication to the Unity process |
+| **Open** | Runtime integration of the reviewed full-match contract, verified Unity Editor/LTS and .NET/runtime versions and packages, Windows build configuration, calibrated body-local gesture mapping, camera/split-layout tuning, measured load isolation, display latency and packaging |
 
-The Windows reference supersedes the earlier Linux-first PC assumption. The user selected Unity with C# on 2026-10-29, replacing the proposed SDL3 renderer; [ADR 0012](https://github.com/motion-tennis/documentation/blob/main/docs/adr/0012-unity-game-engine.md) records this decision. No Unity project or runtime exists yet. Unity presentation does not change the webcam-first 2.5D input constraint or release the deferred true-3D tracking work. The GPU camera worker is a separate service/repository on the same laptop; shared CPU/GPU resources can still affect timing. See the [gameplay rules](https://github.com/motion-tennis/documentation/blob/main/docs/gameplay.md), [player assignment](https://github.com/motion-tennis/documentation/blob/main/docs/player-assignment.md), [ADR 0010](https://github.com/motion-tennis/documentation/blob/main/docs/adr/0010-doubles-auto-movement-gameplay.md) and [game integration design](https://github.com/motion-tennis/documentation/blob/main/docs/game-engine.md).
+The Windows reference supersedes the earlier Linux-first PC assumption. The user selected Unity with C# on 2026-10-29 and C# for the committed-state service on 2026-11-03; [ADR 0012](https://github.com/motion-tennis/documentation/blob/main/docs/adr/0012-unity-game-engine.md) records these decisions. The local Unity project contains an RTT diagnostic intended to measure network RTT; it is not the game client or state service, and no hardware measurement is recorded. Unity presentation does not change the webcam-first 2.5D input constraint or release the deferred true-3D tracking work. The GPU camera worker is a separate service/repository on the same laptop; shared CPU/GPU resources can still affect timing. See the [gameplay rules](https://github.com/motion-tennis/documentation/blob/main/docs/gameplay.md), [player assignment](https://github.com/motion-tennis/documentation/blob/main/docs/player-assignment.md), [ADR 0010](https://github.com/motion-tennis/documentation/blob/main/docs/adr/0010-doubles-auto-movement-gameplay.md) and [game integration design](https://github.com/motion-tennis/documentation/blob/main/docs/game-engine.md).
 
 ## Responsibilities and state ownership
 
@@ -74,7 +74,7 @@ Show controller-reported `tr - t0`; do not calculate it by subtracting a PC cloc
 
 ## Prerequisites and setup
 
-Git and a Markdown viewer are enough for current documentation. Unity with C# is the selected game-client stack; the exact verified Unity Editor/LTS release, Windows build support and package versions must be pinned with its first implementation. C++20 and generated codecs remain proposed state-service dependencies whose verified versions must accompany real build files. No executable or launch command exists yet.
+Git and a Markdown viewer are enough for current documentation. Unity/C# is selected for the client, and C# for the separate state service. Pin a verified Unity Editor/LTS release, .NET/runtime target, Windows build support and package versions with the first implementation. Generated codec versions must accompany real build files. No game executable or launch command exists yet.
 
 Clone using the verified remote:
 
