@@ -3,6 +3,25 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using MotionTennis.GameState;
 
+if (args is ["--shared-batch", var fixturePath])
+{
+    try
+    {
+        SharedBatchFixture.Verify(fixturePath);
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Shared batch fixture failed: {ex.Message}");
+        return 1;
+    }
+}
+if (args.Length != 0)
+{
+    Console.Error.WriteLine("Usage: MotionTennis.GameState.Tests [--shared-batch <fixture.json>]");
+    return 1;
+}
+
 var checks = new (string Name, Action Run)[]
 {
     ("eight-query full-match snapshot and atomic commit", SetupQueryAndCommit),
