@@ -18,6 +18,8 @@ var checks = new (string Name, Action Run)[]
     ("rejected query inputs are explicitly accounted in source order", RejectedQueryAccounting),
     ("writer restart requires setup reconciliation and preserves the snapshot", WriterRestart),
     ("score change requires a sporting award event", ScoreAward),
+    ("active tiebreak snapshots respect the wire counter range", ActiveTiebreakCounters),
+    ("completed tiebreak counters and winner are validated atomically", CompletedTiebreakCounters),
     ("technical pause event requires a paused match state", TechnicalPause)
 };
 
@@ -241,6 +243,74 @@ static void ScoreAward()
     {
         RuleEvents = ImmutableArray.Create(award)
     }).Status);
+}
+
+static void ActiveTiebreakCounters()
+{
+    const ulong max = (1UL << 56) - 1;
+    var cases = new (ulong A, ulong B, bool Accepted)[]
+    {
+        (100, 99, true),
+        (max - 1, max, true),
+        (max + 1, max, false),
+        (max, max + 1, false)
+    };
+    var f = Fixture.Create();
+    var initial = f.Store.ReadSnapshot()!;
+    foreach (var item in cases)
+    {
+        var store = new GameStateStore(f.Clock);
+        True(store.RegisterWriter(f.Writer, out _));
+        True(store.InstallSetup(f.Setup, out _));
+        var match = initial.Match with
+        {
+            Score = initial.Match.Score with { GamesA = 6, GamesB = 6, Tiebreak = true, TiebreakPointsA = item.A, TiebreakPointsB = item.B },
+            Serve = initial.Match.Serve with { TiebreakFirstServerSlot = 1 }
+        };
+        var snapshot = initial with { Match = match };
+        Equal(item.Accepted, store.InitializeSnapshot(snapshot, out _));
+        Equal(item.Accepted ? snapshot : null, store.ReadSnapshot());
+    }
+}
+
+static void CompletedTiebreakCounters()
+{
+    const ulong max = (1UL << 56) - 1;
+    var cases = new (CompletedSet Set, bool Accepted)[]
+    {
+        (new(7, 6, true, 7, 0), true),
+        (new(6, 7, true, max - 2, max), true),
+        (new(7, 6, true, max + 1, max - 1), false),
+        (new(6, 7, true, max - 1, max + 1), false),
+        (new(7, 6, true, 100, 99), false),
+        (new(7, 6, true, 98, 100), false)
+    };
+    foreach (var item in cases)
+    {
+        var f = Fixture.Create();
+        var query = f.Query(28, ImmutableArray<QueryEntry>.Empty);
+        var before = f.Store.Query(query).Snapshot!;
+        var winner = item.Set.GamesA > item.Set.GamesB ? Team.A : Team.B;
+        var candidate = f.Advance() with
+        {
+            Score = before.Match.Score with
+            {
+                SetsA = winner == Team.A ? 1U : 0U, SetsB = winner == Team.B ? 1U : 0U,
+                CompletedSets = ImmutableArray.Create(item.Set)
+            }
+        };
+        var award = new RuleEvent(8, RuleEventKind.SetAwarded, candidate.PointId, 0, winner, false, 0, 101, 0);
+        var update = f.Update(query, before.StateVersion, 1, candidate, ImmutableArray<Decision>.Empty) with
+        {
+            RuleEvents = ImmutableArray.Create(award)
+        };
+        var result = f.Store.Commit(update);
+        Equal(item.Accepted ? CommitStatus.Accepted : CommitStatus.Invalid, result.Status);
+        if (item.Accepted)
+            Equal(candidate, f.Store.ReadSnapshot()!.Match);
+        else
+            Equal(before, f.Store.ReadSnapshot());
+    }
 }
 
 static void TechnicalPause()

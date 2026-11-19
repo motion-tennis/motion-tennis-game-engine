@@ -466,7 +466,7 @@ public sealed class GameStateStore
             return Fail("Advantage requires the opposing side to remain at forty.", out reason);
         if (match.Score.CompletedSets.Length > 2 * configuration.Rules.SetsToWin - 1 ||
             match.Score.GamesA > 7 || match.Score.GamesB > 7 ||
-            match.Score.TiebreakPointsA > 99 || match.Score.TiebreakPointsB > 99)
+            match.Score.TiebreakPointsA > MaxWireUint64 || match.Score.TiebreakPointsB > MaxWireUint64)
             return Fail("Score values exceed the pinned match bounds.", out reason);
         var setWinsA = 0U;
         var setWinsB = 0U;
@@ -482,7 +482,7 @@ public sealed class GameStateStore
             {
                 var highPoints = Math.Max(completed.TiebreakPointsA, completed.TiebreakPointsB);
                 var lowPoints = Math.Min(completed.TiebreakPointsA, completed.TiebreakPointsB);
-                if (highPoints != Math.Max(7UL, lowPoints + 2) ||
+                if (highPoints > MaxWireUint64 || highPoints != Math.Max(7UL, lowPoints + 2) ||
                     (completed.GamesA > completed.GamesB) != (completed.TiebreakPointsA > completed.TiebreakPointsB))
                     return Fail("Completed tiebreak score or winner is invalid.", out reason);
             }

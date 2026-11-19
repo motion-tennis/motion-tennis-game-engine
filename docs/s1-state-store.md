@@ -21,10 +21,14 @@ dotnet build src\MotionTennis.GameState\MotionTennis.GameState.csproj
 dotnet run --project tests\MotionTennis.GameState.Tests\MotionTennis.GameState.Tests.csproj
 ```
 
-The harness runs 14 deterministic checks, including the full eight-query/four-controller batch, setup retries, atomic commit/rollback, duplicate and changed-payload retries, stale versions, explicit rejected-input accounting, writer restart/reconciliation, periodic-only updates, score-award and technical-pause invariants, expiry/unknown status, and bounded retention.
+The harness runs 16 checks covering the eight-query/four-controller batch, setup retries, atomic commit/rollback, duplicate and changed-payload retries, stale versions, explicit rejected-input accounting, writer restart/reconciliation, periodic-only updates, score-award and technical-pause invariants, expiry/unknown status, bounded retention and tiebreak scores.
+
+On 2026-11-19, both new tiebreak checks reproduced the defects against game base `f34c226` and passed with the repair. All 16 checks passed on .NET SDK 10.0.401 targeting `net8.0`. The snapshot tests accept an active 100–99 tiebreak and a score at the unsigned 56-bit limit. The commit tests cover completed tiebreaks at that limit, a one-point lead and a mismatched winner. An out-of-range counter for either team leaves the initial store empty or the committed snapshot intact.
 
 ## Boundaries and remaining work
 
 This is the in-memory state core, not a running Windows service. It has no TCP framing, control socket, local publication transport, persistence, Unity client or generated Protobuf C# types. The S1 test adapter supplies typed records and canonical configuration bytes; production input must first pass the exact v0.3 canonical-wire validation, decode the accepted schema/profile and preserve the original bounded wire identity for retries. The JSON fingerprint is an internal typed-object identity for this slice, not a replacement wire encoding or protocol hash.
 
 The fixture seeds a complete version-one snapshot after writer registration and setup, matching the shared contract fixture shape. The live startup/initial-state handshake still needs to be pinned with the physics producer. The current test evidence establishes host-side storage semantics only; it does not establish network interoperability, Unity isolation under load, Windows service timing, Pi behavior or stage acceptance.
+
+The remaining shared S1 evidence requires a common physics/game fixture for canonical query and update identities and rejected-input accounting, plus emitted commit, event and diagnostic records with their correlation identities and timestamps.
